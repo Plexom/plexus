@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f plexus/state.md ] || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/session_brief.py\" SessionStart",
+            "timeout": 10,
+            "statusMessage": "Reading the project state"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f plexus/state.md ] || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/session_brief.py\" PreCompact",
+            "timeout": 10,
+            "statusMessage": "Reminding about the train of thought"
+          }
+        ]
+      }
+    ]
+  }
+}

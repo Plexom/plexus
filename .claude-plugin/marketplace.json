@@ -1,0 +1,24 @@
+{
+  "name": "plexus",
+  "owner": {
+    "name": "Plexom"
+  },
+  "description": "Plexus — a spec-driven software production framework: a pipeline of stages, state kept in files, a progress page.",
+  "plugins": [
+    {
+      "name": "plexus",
+      "source": "./",
+      "description": "Plexus — a spec-driven software production framework for Claude Code: stages from idea to release, state kept in files that survives a context clear, a readiness checklist and a progress page for stakeholders. Independent of the technical stack: everything platform-specific lives in a swappable build configuration.",
+      "category": "engineering",
+      "keywords": [
+        "spec-driven-development",
+        "workflow",
+        "sdlc",
+        "iterations",
+        "planning",
+        "code-review",
+        "project-state"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "plexus",
+  "version": "1.0.0-beta.1",
+  "description": "Plexus — a spec-driven software production framework for Claude Code: stages from idea to release, state kept in files that survives a context clear, a readiness checklist and a progress page for stakeholders. Independent of the technical stack: everything platform-specific lives in a swappable build configuration.",
+  "author": {
+    "name": "Plexom"
+  },
+  "homepage": "https://github.com/Plexom/plexus",
+  "repository": "https://github.com/Plexom/plexus",
+  "license": "MIT",
+  "keywords": [
+    "spec-driven-development",
+    "workflow",
+    "sdlc",
+    "iterations",
+    "planning",
+    "code-review",
+    "project-state"
+  ],
+  "skills": [
+    "./skills/init",
+    "./skills/discover",
+    "./skills/design",
+    "./skills/setup",
+    "./skills/plan",
+    "./skills/implement",
+    "./skills/verify",
+    "./skills/release",
+    "./skills/update",
+    "./skills/review",
+    "./skills/dashboard",
+    "./skills/checkpoint",
+    "./skills/remove"
+  ]
+}
