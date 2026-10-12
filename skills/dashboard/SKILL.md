@@ -2,7 +2,7 @@
 name: dashboard
 description: In a project with plexus/: builds the progress page - one HTML file from plexus/ and the git history - showing what the product can already do, what is under way and what waits. Use when the user wants to see progress or prepare a summary for someone outside.
 context: fork
-allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/dashboard.py" *) Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/tables.py" *)
+allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/dashboard.py") Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/tables.py" *)
 ---
 
 # Dashboard
@@ -19,10 +19,10 @@ iterations are one line each with what they delivered; their tasks are folded in
 ## Building
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/dashboard.py" plexus/dashboard.html
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/dashboard.py"
 ```
 
-From the project root.
+The page is always `plexus/dashboard.html`.
 
 ## Check what came out
 

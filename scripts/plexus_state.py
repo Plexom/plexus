@@ -10,7 +10,24 @@ derived one cannot.
 import re
 from pathlib import Path
 
-ROOT = Path.cwd()
+
+def find_root(start):
+    """The project's root: the folder itself when it holds plexus/, else the nearest one above
+    holding plexus/state.md — the way git finds .git.
+
+    A session moves with a `cd`: after a role such as `cd web && npm test` it stays in web/,
+    and a stage started there would report a project with Plexus as one without. Init,
+    update and remove do not look up: a new project inside another must not find its parent's.
+    """
+    if (start / "plexus").is_dir():
+        return start
+    for folder in start.parents:
+        if (folder / "plexus" / "state.md").is_file():
+            return folder
+    return start
+
+
+ROOT = find_root(Path.cwd())
 STATE = ROOT / "plexus"
 
 # Files that could not be parsed: the page looks plausible without them, and a

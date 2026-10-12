@@ -18,8 +18,9 @@ the charter's version from plugin.json, the markers, the secret patterns.
 Two modes:
     python3 deploy.py --templates
         prints the three templates, each under a `=== <name>` line — exactly the
-        format the deployment reads back; and the charter too, when ./CLAUDE.md
-        exists, since a charter appended to someone's rules is compared first
+        format the deployment reads back; and the charter, always: init follows its
+        rules on asking before any CLAUDE.md holds them, and a charter appended to
+        someone's rules is compared with them first
     python3 deploy.py <project directory> [options]  < sections
         reads from stdin the sections `=== spec/index.md`, one `=== spec/<part>.md`
         per part of the product, `=== config.md`, `=== state.md` and
@@ -38,6 +39,8 @@ Options:
 **Checks the input before writing and the result after.** Refused input writes
 nothing; a failed result is rolled back — plexus/ removed, CLAUDE.md and
 .gitignore restored byte for byte — so a retry never meets "already exists".
+The user's lines in those two are never rewritten: what is added follows the
+file's own line endings.
 Git comes last and only commits Plexus's own paths — nothing of the user's that
 happens to be staged or changed goes into that commit.
 Exit code: 0 — deployed and committed; 1 — refused or rolled back, nothing is
@@ -83,12 +86,19 @@ class Refused(Exception):
 
 
 def read(path):
-    return io.open(path, encoding="utf-8").read()
+    # newline="": line endings as they are, so a file put back on rollback is byte for byte
+    with io.open(path, encoding="utf-8", newline="") as f:
+        return f.read()
 
 
 def write(path, text):
-    with io.open(path, "w", encoding="utf-8", newline="\n") as f:
+    with io.open(path, "w", encoding="utf-8", newline="") as f:
         f.write(text)
+
+
+def ending(text):
+    """The line ending a file of the user's is written with: what is added follows it."""
+    return "\r\n" if text and "\r\n" in text else "\n"
 
 
 def templates(root):
@@ -100,10 +110,11 @@ def templates(root):
             print(read(os.path.join(TEMPLATES, PART)).rstrip("\n"))
     print("=== %s" % RULE)
     print("<the commit rule settled with the user; their words quoted beneath when reworded>")
-    if os.path.isfile(os.path.join(root, "CLAUDE.md")):
-        print("\n--- charter, for comparison with the existing CLAUDE.md: the script writes it "
-              "itself, do not send it back ---")
-        print(read(CHARTER).rstrip("\n"))
+    print("\n--- charter: the rules this conversation follows from now on%s; the script writes "
+          "it into CLAUDE.md itself, do not send it back ---"
+          % (", compared with the existing CLAUDE.md" if os.path.isfile(os.path.join(root, "CLAUDE.md"))
+             else ""))
+    print(read(CHARTER).rstrip("\n"))
     return 0
 
 
@@ -264,6 +275,13 @@ def commit(root, version, created):
         if code != 0:
             raise GitFailed("git init failed: %s" % out)
     paths = ["plexus", "CLAUDE.md", ".gitignore"]
+    # a file the user keeps out of git — .git/info/exclude, a global ignore — stays out:
+    # added with -f it would go into the history, and with the first push outside
+    ignored = [p for p in paths if git(root, "check-ignore", "-q", "--", p)[0] == 0]
+    if "plexus" in ignored:
+        raise GitFailed("git ignores plexus/ here, and Plexus commits the work's state in it — "
+                        "ask the user whether it may stop being ignored; never add it with -f")
+    paths = [p for p in paths if p not in ignored]
     code, out = git(root, "add", "--", *paths)
     if code != 0:
         raise GitFailed("git add failed: %s" % out)
@@ -277,7 +295,7 @@ def commit(root, version, created):
                 "git config user.email), then commit plexus/, CLAUDE.md and .gitignore"
                 if "user.email" in out or "identity" in out.lower() else "")
         raise GitFailed("git commit failed: %s%s" % (out.splitlines()[-1] if out else "", hint))
-    return git(root, "rev-parse", "--short", "HEAD")[1]
+    return git(root, "rev-parse", "--short", "HEAD")[1], ignored
 
 
 def set_personal(key, value):
@@ -309,7 +327,9 @@ def deploy(root, given, screenshots=None, in_parent=False):
     block, version = charter_block(given[RULE])
     repo = repository(root, in_parent)
 
-    new_claude = block if old_claude is None else old_claude.rstrip("\n") + "\n\n" + block
+    nl = ending(old_claude)
+    new_claude = (block if old_claude is None
+                  else old_claude.rstrip("\r\n") + nl + nl + block.replace("\n", nl))
     present = set(l.strip() for l in (old_ignore or "").splitlines())
     secrets = [p for p in SECRETS if p not in present]
     local = [p for p in LOCAL if p not in present]
@@ -319,8 +339,9 @@ def deploy(root, given, screenshots=None, in_parent=False):
     if local:
         tail += ["# Personal Claude Code settings"] + local + [""]
     tail += ["# plexus:begin"] + IGNORED + ["# plexus:end"]
-    base = (old_ignore or "").rstrip("\n")
-    new_ignore = (base + "\n\n" if base else "") + "\n".join(tail) + "\n"
+    nl = ending(old_ignore)
+    base = (old_ignore or "").rstrip("\r\n")
+    new_ignore = (base + nl + nl if base else "") + nl.join(tail) + nl
 
     try:
         os.makedirs(target)
@@ -351,8 +372,8 @@ def deploy(root, given, screenshots=None, in_parent=False):
     print("  plexus/      %s" % ", ".join(n for n in given if n != RULE))
     print("  CLAUDE.md    %s" % ("created with the charter" if old_claude is None else
                                  "charter appended; what was above it untouched (%d line%s)"
-                                 % (len(old_claude.rstrip("\n").splitlines()),
-                                    "" if len(old_claude.rstrip("\n").splitlines()) == 1 else "s")))
+                                 % (len(old_claude.rstrip("\r\n").splitlines()),
+                                    "" if len(old_claude.rstrip("\r\n").splitlines()) == 1 else "s")))
     print("  .gitignore   %s; Plexus lines between # plexus:begin and # plexus:end%s" % (
         "created" if old_ignore is None else "appended",
         "; secret patterns added outside them: %s" % " ".join(secrets) if secrets else ""))
@@ -367,12 +388,15 @@ def deploy(root, given, screenshots=None, in_parent=False):
             # the project is deployed; a personal answer not written is asked again later
             print("  personal     screenshots NOT written: %s" % e)
     try:
-        sha = commit(root, version, repo is None)
+        sha, ignored = commit(root, version, repo is None)
     except GitFailed as e:
         sys.stderr.write("Deployed, but not committed: %s\n" % e)
         return 2
     print("  git          %s; commit %s with Plexus's files only" % (
         "repository created" if repo is None else "existing repository", sha))
+    if ignored:
+        print("  left out     %s — git ignores it here, so it stays out of the history as the user "
+              "set it; never add it with -f" % ", ".join(ignored))
     return 0
 
 
@@ -389,7 +413,7 @@ def verify(root, given, version, old_claude, old_ignore):
         raise Refused("CLAUDE.md: a placeholder is left between the markers")
     if "Managed by Plexus %s." % version not in inside:
         raise Refused("CLAUDE.md: the charter does not carry version %s" % version)
-    if old_claude is not None and not claude.startswith(old_claude.rstrip("\n")):
+    if old_claude is not None and not claude.startswith(old_claude.rstrip("\r\n")):
         raise Refused("CLAUDE.md: what was there before did not survive")
     ignore = read(os.path.join(root, ".gitignore")).splitlines()
     if ignore.count("# plexus:begin") != 1 or ignore.count("# plexus:end") != 1:

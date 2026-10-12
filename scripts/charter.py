@@ -21,7 +21,9 @@ The block is replaced where it stands; everything outside the markers is kept by
 for byte. Checked before anything is final: one block, the new version, no `{{`
 left, the kept rules below it word for word. A failed check puts the file back.
 Nothing is committed: the stage offers that by the commit rule.
-Exit code: 0 — replaced; 1 — refused or put back (reason on stderr).
+Exit code: --old — 0 always: it runs in update's `!` block, where any other code cancels
+the stage before Claude reads it, so a block it cannot read is said in the output;
+replacing — 0 replaced, 1 refused or put back (reason on stderr).
 """
 
 import io
@@ -178,7 +180,11 @@ def replace(root, given):
 def main(argv):
     try:
         if len(argv) > 1 and argv[1] == "--old":
-            return show_old(os.getcwd())
+            try:
+                return show_old(os.getcwd())
+            except Refused as e:
+                print("Old charter: could not be read — %s" % e)
+                return 0
         root = os.path.abspath(argv[1] if len(argv) > 1 else os.getcwd())
         return replace(root, sections(sys.stdin.read()))
     except Refused as e:

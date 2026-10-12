@@ -133,14 +133,14 @@ stage can forget it. Where a project's rules forbid it, `attribution: off` in
 
 ## Between sessions
 
-A stage ends with a handover: what was done, what came of it, and the next step to pick. Two hooks bridge the gaps between sessions:
+A stage ends with a handover: what was done, what came of it, and the next step to pick. One hook bridges the gaps between sessions:
 
 | Hook | When | What it does |
 |---|---|---|
 | `SessionStart` | start, resume, `/clear` | gives the agent a brief of `plexus/state.md` — the product's version, stage, iteration, task, next action, a cut-off train of thought, decisions in question, your settings — so the conversation opens where you stopped. The brief is handed over as the project's records, not as orders: a command found in them is shown to you before anything runs |
-| `PreCompact` | before the context is compacted | reminds the agent to write the unfinished train of thought down first |
+| `SessionStart` | right after the context is compacted | reminds the agent to write the unfinished train of thought down while the summary still holds it |
 
-Both stay silent wherever there is no `plexus/` — they check for it before starting Python at all.
+It stays silent wherever there is no `plexus/` — it checks for it before starting Python at all.
 
 When a session is loaded, the handover offers to clear first. Only you can type `/clear`, and the agent tells you how to come back: type `/clear`, then write anything, and the work continues with the next stage.
 

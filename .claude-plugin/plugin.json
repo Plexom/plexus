@@ -1,6 +1,6 @@
 {
   "name": "plexus",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Plexus — a spec-driven software production framework for Claude Code: stages from idea to release, state kept in files that survives a context clear, a readiness checklist and a progress page for stakeholders. Independent of the technical stack: everything platform-specific lives in a swappable build configuration.",
   "author": {
     "name": "Plexom"

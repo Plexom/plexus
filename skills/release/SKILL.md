@@ -87,7 +87,8 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/secrets.py" path <the artefact>
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/secrets.py" diff <the previous version's tag or first commit>
 ```
 
-Exit `2` lists what looks like a secret, masked; each is shown to the user, and the release
+Exit `2` lists what looks like a secret, masked, and exit `1` what could not be looked into —
+an archive it cannot open, a file too large; each is shown to the user, and the release
 waits until every one is settled. What the build needs is in the system keychain and listed in
 `config.md`. A secret that reaches a published artefact is revoked, not deleted: it is
 compromised from the moment of publication — which is why this comes before, not after.

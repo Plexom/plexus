@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Project state brief for the SessionStart hook, and a reminder before compaction.
+"""Project state brief for the SessionStart hook, and a reminder right after compaction.
 
 Reads plexus/state.md and hands Claude Code a short note on where the work
 stopped and what comes next. It exists because the charter tells the agent to
@@ -229,13 +229,15 @@ def build(state_path):
     return "\n".join(lines)[:LIMIT] + "\n" + commit_line() + "\n" + tail
 
 
+# Said after compaction, not before: a PreCompact hook cannot speak to Claude — Claude Code
+# keeps its output out of the conversation, and no turn of Claude's comes between the hook
+# and the compaction. Right after it the summary still holds what the next session would lose.
 COMPACT_NOTICE = (
-    "The context is about to be compacted. A train of thought survives compaction only in "
-    "writing: update plexus/state.md — the \"Unfinished train of thought\" section (what was "
-    "tried, what did not work, which hypothesis is next) and \"Next action\". Keep the "
-    "<!-- plexus:... --> anchors on their headings; the next session's brief finds those "
-    "sections by the anchors, not by the words. Then check git status and tell the user what "
-    "is left uncommitted."
+    "The context was just compacted. A train of thought survives the next /clear only in "
+    "writing: if plexus/state.md does not hold it yet, write it there now from the summary — "
+    "the \"Unfinished train of thought\" section (what was tried, what did not work, which "
+    "hypothesis is next) and \"Next action\". Keep the <!-- plexus:... --> anchors on their "
+    "headings; the next session's brief finds those sections by the anchors, not by the words."
 )
 
 
@@ -248,12 +250,10 @@ def main():
     state_path = os.path.join(os.getcwd(), "plexus", "state.md")
     if not os.path.isfile(state_path):
         return 0  # not a Plexus project — the hook has nothing to say here
-    if event == "PreCompact":
-        brief = COMPACT_NOTICE
-    elif given.get("source") == "compact":
-        # the conversation goes on, summarized: no new brief, only the command a summary
-        # is likely to drop and every commit needs
-        brief = commit_line()
+    if given.get("source") == "compact":
+        # the conversation goes on, summarized: no new brief, only what the summary may have
+        # dropped — the command every commit needs, and the train of thought to write down
+        brief = commit_line() + "\n" + COMPACT_NOTICE
     else:
         try:
             brief = build(state_path)

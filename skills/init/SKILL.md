@@ -111,8 +111,9 @@ Then one `AskUserQuestion`: **it is right** (recommended), or a correction throu
 
 ## 4. Settings
 
-One `AskUserQuestion` call; skip a question the ground check already answers. Each in plain
-words, the reason in the option's description, recommended first:
+`AskUserQuestion` takes four questions at most: the first four in one call, the rest in a
+second; skip a question the ground check already answers. Each in plain words, the reason in
+the option's description, recommended first:
 
 - **Commits**: without asking (recommended, unless the Defaults line names another habit —
   a stage that finished well has nothing to confirm, and one revert undoes a commit), or
@@ -141,7 +142,7 @@ words, the reason in the option's description, recommended first:
   this project, never your code or other files, and only for you; or ask each time.
 
 **A rule in an existing `CLAUDE.md`** that contradicts the charter printed above goes into
-the same call: which takes precedence.
+the second call: which takes precedence.
 
 ## 5. Say what will be created, then deploy
 
@@ -232,7 +233,7 @@ send the user to a terminal — ask, as plain text, the name and email their com
 carry, and set them for this repository only (`git config user.name`, `git config
 user.email`, no `--global`): other projects of theirs stay as they were.
 
-With "without asking" from step 4, after a deployment that exited `0`: add
+With "without asking" for Plexus's own files in step 4, after a deployment that exited `0`: add
 `"Edit(./plexus/**)"` to `permissions.allow` in `.claude/settings.local.json` with the Edit
 tool — or Write, creating `{"permissions": {"allow": ["Edit(./plexus/**)"]}}` when the file is
 absent — keeping everything else in it. Claude Code shows that edit for approval: it is the

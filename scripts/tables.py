@@ -19,13 +19,17 @@ Run from the project root:
 `state` and `git` are here so a stage substitutes where the work stopped with the
 one command it is already allowed to run: a `cat` or `git status` of its own is a
 command outside the stage's permissions, and outside auto mode that stops the call.
-Exit code: 0 — read; 1 — no plexus/ here; 2 — some files could not be read
-(named on stderr; the tables are incomplete).
+
+A stage runs this in its `!` block, where any exit code but 0 cancels the whole stage
+before Claude reads a word of it — and the stage that would fix an unreadable file
+is exactly the one that then never loads. So what went wrong is said in the output:
+no plexus/ here, or the files left out of the tables, each with why.
+Exit code: 0 — always, but for a table name it does not know (1).
 """
 import subprocess
 import sys
 
-from plexus_state import (STATE, SKIPPED, CLOSED_TASK, OPEN_ITERATION, load, ids,
+from plexus_state import (ROOT, STATE, SKIPPED, CLOSED_TASK, OPEN_ITERATION, load, ids,
                           feature_status, task_waits)
 
 
@@ -143,8 +147,9 @@ def git_state(s, show_all):
 
 def main(argv):
     if not STATE.is_dir():
-        print("no %s directory — run from the root of a project with Plexus" % STATE, file=sys.stderr)
-        return 1
+        print("No plexus/ in %s or any folder above it — not a project with Plexus; there is "
+              "nothing to read here. /plexus:init brings Plexus into a project." % ROOT)
+        return 0
     show_all = "--all" in argv
     which = [a for a in argv if not a.startswith("--")]
     s = load()
@@ -160,10 +165,10 @@ def main(argv):
             print()
         parts[name](s, show_all)
     if SKIPPED:
-        print("unreadable, left out of the tables: %d" % len(SKIPPED), file=sys.stderr)
+        print("\nUnreadable, left out of the tables above, so they are incomplete: %d — "
+              "tell the user and fix these before relying on the counts:" % len(SKIPPED))
         for path, why in SKIPPED:
-            print("  %s — %s" % (path, why), file=sys.stderr)
-        return 2
+            print("  %s — %s" % (path.relative_to(ROOT) if path.is_absolute() else path, why))
     return 0
 
 

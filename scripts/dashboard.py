@@ -6,7 +6,9 @@ changelog — and the git history, and writes one self-contained HTML file with 
 external dependencies. The page is for someone who does not live in the project,
 so finished work is shown as what the product can now do, not as closed tasks.
 
-Run from the project root:  python3 dashboard.py [output file]
+Run inside the project:  python3 dashboard.py
+The page is always plexus/dashboard.html: a path taken from outside could overwrite any
+file the session can reach — another project's notes, a page of the user's own site.
 """
 import re
 import subprocess
@@ -230,7 +232,10 @@ if __name__ == "__main__":
     if not STATE.is_dir():
         print(f"no {STATE} directory — run from the root of a project with Plexus", file=sys.stderr)
         sys.exit(1)
-    out = Path(sys.argv[1]) if len(sys.argv) > 1 else STATE / "dashboard.html"
+    if len(sys.argv) > 1:
+        print("the page is always plexus/dashboard.html — no other path is written", file=sys.stderr)
+        sys.exit(1)
+    out = STATE / "dashboard.html"
     html = build()
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("<!doctype html><meta charset='utf-8'>"

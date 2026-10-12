@@ -140,7 +140,9 @@ work stopped.
 - Ideas from the report → `backlog.md`, "Ideas"; a corner cut knowingly → "Debt", with
   its reason; a new permission or a change to a feature is not recorded quietly — it is a
   product decision and goes to the user.
-- A commit naming the task id, by the commit rule; a push only on an explicit request.
+- A commit naming the task id — every task gets one, since the check at the end reads
+  commits; the commit rule says only when the user is asked. A push only on an explicit
+  request.
 - `state.md` rewritten — after every task, not once at the end: a break comes in the
   middle, exactly where the record is needed. It must show which task closed, which is
   next, what was sent back. Keep the `<!-- plexus:... -->` anchors on their headings.

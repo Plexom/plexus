@@ -12,18 +12,6 @@
           }
         ]
       }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ ! -f plexus/state.md ] || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/session_brief.py\" PreCompact",
-            "timeout": 10,
-            "statusMessage": "Reminding about the train of thought"
-          }
-        ]
-      }
     ]
   }
 }
